@@ -63,6 +63,9 @@ class KalmanFilter {
 
   // measurement covariance matrix
   Eigen::MatrixXd R_;
+  
+ private:
+  Eigen::VectorXd h(const Eigen::VectorXd &x);
 };
 
 #endif // KALMAN_FILTER_H_
