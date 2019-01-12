@@ -42,7 +42,15 @@ FusionEKF::FusionEKF() {
              0, 1, 0, 0,
              0, 0, 1000, 0,
              0, 0, 0, 1000;
+  
+  // State transition matrix
+  ekf_.F_ = MatrixXd(4,4);
+  ekf_.F_ << 1, 0, 1, 0,
+             0, 1, 0, 1,
+             0, 0, 1, 0,
+             0, 0, 0, 1;
 
+  ekf_.Q_ = MatrixXd(4, 4);
 
 }
 
@@ -87,7 +95,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       ekf_.x_ << x, y, 0, 0; // No velocity for LIDAR
     }
 
-    previous_timestamp_ = measurement_pack.timestamp_ / 1000000.0;
+    previous_timestamp_ = measurement_pack.timestamp_;
 
     // done initializing, no need to predict or update
     is_initialized_ = true;
@@ -103,11 +111,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   previous_timestamp_ = measurement_pack.timestamp_;
   
   // Update state transition matrix
-  ekf_.F_ = MatrixXd(4,4);
-  ekf_.F_ << 1, 0, dt, 0,
-             0, 1, 0, dt,
-             0, 0, 1, 0,
-             0, 0, 0, 1;
+  ekf_.F_(0, 2) = dt;
+  ekf_.F_(1, 3) = dt;
 
   // Update process noise covariance matrix
   float dt_2 = dt * dt;
@@ -116,7 +121,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   float noise_ax = 9.0;
   float noise_ay = 9.0;
 
-  ekf_.Q_ = MatrixXd(4, 4);
   ekf_.Q_ << dt_4/4*noise_ax, 0, dt_3/2*noise_ax, 0,
              0, dt_4/4*noise_ay, 0, dt_3/2*noise_ay,
              dt_3/2*noise_ax, 0, dt_2*noise_ax, 0,
