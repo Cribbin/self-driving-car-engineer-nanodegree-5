@@ -80,10 +80,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
            << ", y: " << cartesian_y << ", rhodot: " << rhodot
            << ", v_x: " << v_x << ", v_y: " << v_y << endl;
       
-      ekf_.x_ << cartesian_x,
-                 cartesian_y,
-                 v_x,
-                 v_y;
+      ekf_.x_ << cartesian_x, cartesian_y, v_x, v_y;
+
     } else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
       // Initialize state.
       float cartesian_x = measurement_pack.raw_measurements_[0];
@@ -91,11 +89,12 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       
       cout << "Lidar | x: " << cartesian_x << ", y: " << cartesian_y << endl;
       
-      ekf_.x_ << cartesian_x,
-                 cartesian_y,
-                 0,
-                 0;
+      ekf_.x_ << cartesian_x, cartesian_y, 0, 0; // No velocity for LIDAR
     }
+    
+    // ekf_.P_ = ???
+
+    previous_timestamp_ = measurement_pack.timestamp_ / 1000000.0;
 
     // done initializing, no need to predict or update
     is_initialized_ = true;
@@ -107,11 +106,23 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    */
 
   /**
-   * TODO: Update the state transition matrix F according to the new elapsed time.
-   * Time is measured in seconds.
    * TODO: Update the process noise covariance matrix.
    * Use noise_ax = 9 and noise_ay = 9 for your Q matrix.
    */
+  
+  // Get elapsed time between timestamps. Division to convert to seconds
+  float dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;
+  previous_timestamp_ = measurement_pack.timestamp_;
+  
+  // Update state transition matrix
+  ekf_.F_ = MatrixXd(4,4);
+  ekf_.F_ << 1, 0, dt, 0,
+             0, 1, 0, dt,
+             0, 0, 1, 0,
+             0, 0, 0, 1;
+  
+  // Update process noise covariance matrix
+  //ekf_.Q_ = ??
 
   ekf_.Predict();
 
