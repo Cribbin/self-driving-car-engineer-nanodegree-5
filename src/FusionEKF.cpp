@@ -50,10 +50,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    * Initialization
    */
   if (!is_initialized_) {
-    /**
-     * TODO: Create the covariance matrix.
-     */
-    
     cout << "Measurement: " << measurement_pack.raw_measurements_ << endl;
 
     // first measurement
@@ -92,7 +88,12 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       ekf_.x_ << cartesian_x, cartesian_y, 0, 0; // No velocity for LIDAR
     }
     
-    // ekf_.P_ = ???
+    // State covariance matrix
+    ekf_.P_ = MatrixXd(4, 4);
+    ekf_.P_ << 1, 0, 0, 0,
+               0, 1, 0, 0,
+               0, 0, 1000, 0,
+               0, 0, 0, 1000;
 
     previous_timestamp_ = measurement_pack.timestamp_ / 1000000.0;
 
@@ -120,9 +121,19 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
              0, 1, 0, dt,
              0, 0, 1, 0,
              0, 0, 0, 1;
-  
+
   // Update process noise covariance matrix
-  //ekf_.Q_ = ??
+  float dt_2 = dt * dt;
+  float dt_3 = dt_2 * dt;
+  float dt_4 = dt_3 * dt;
+  float noise_ax = 9;
+  float noise_ay = 9;
+
+  ekf_.Q_ = MatrixXd(4, 4);
+  ekf_.Q_ << dt_4/4*noise_ax, 0, dt_3/2*noise_ax, 0,
+             0, dt_4/4*noise_ay, 0, dt_3/2*noise_ay,
+             dt_3/2*noise_ax, 0, dt_2*noise_ax, 0,
+             0, dt_3/2*noise_ay, 0, dt_2*noise_ay;
 
   ekf_.Predict();
 
