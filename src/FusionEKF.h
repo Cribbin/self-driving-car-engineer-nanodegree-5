@@ -32,6 +32,21 @@ class FusionEKF {
   KalmanFilter ekf_;
 
  private:
+  /**
+   * Run the initial steps for processing the first measurement
+   */
+  void RunInitialization(const MeasurementPackage &measurement_pack);
+
+  /**
+   * Run the prediction step
+   */
+  void RunPrediction(const MeasurementPackage &measurement_pack);
+
+ /**
+  * Run the update step
+  */
+  void RunUpdate(const MeasurementPackage &measurement_pack);
+
   // check whether the tracking toolbox was initialized or not (first measurement)
   bool is_initialized_;
 
