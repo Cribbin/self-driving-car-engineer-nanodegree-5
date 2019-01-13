@@ -53,7 +53,7 @@ void KalmanFilter::Update(const VectorXd &z) {
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
   /**
-   * TODO: update the state by using Extended Kalman Filter equations
+   * Update the state by using Extended Kalman Filter equations
    */
   
   // First need to convert state vector into measurement space (Which we will call h)
